@@ -27,10 +27,11 @@ class Vaccine:
 		self.file = file
 		self.method = method
 
-		form = self.get_form()
+		txt = self.request()
+		form = self.get_form(txt)
 		self.request_url = self.get_request_url(form)
 		field = self.get_field_names(form)
-		if len(field) > 1:
+		if len(field) > 2:
 			self.username_field_name = field[0]
 			self.password_field_name = field[1]
 		else:
@@ -44,8 +45,7 @@ class Vaccine:
 - username-field: {self.username_field_name}
 - password-field: {self.password_field_name}'''
 
-	def get_form(self):
-		txt = self.request()
+	def get_form(self, txt):
 		forms = re.findall(r'(<form(.|\s)*?</form>)', txt)
 
 		if not forms:
@@ -53,9 +53,10 @@ class Vaccine:
 		filtered_froms = []
 		for form in forms:
 			method_match = re.search(r'method="(.*?)"', form[0])
+			print(method_match, self.method)
 			if not method_match:
 				continue
-			if method_match.group(1) != self.method:
+			if method_match.group(1).lower() != self.method:
 				continue
 			filtered_froms.append(form[0])
 
@@ -78,11 +79,15 @@ class Vaccine:
 
 	def request(self):
 		try:
-			response = requests.get(self.url)
+			cookies = {'PHPSESSID': 'nel0fho1gbdki58qm6365n5lh3'}
+			response = requests.get(self.url, cookies=cookies)
 		except requests.exceptions.ConnectionError:
 			error_exit(f"connection refused - {self.url}")
-		except:
-			error_exit(f"invalid URL - {self.url}")
+		except Exception as e:
+			error_exit(e)
+		if response.status_code == 302:
+			error_exit("no cookie found")
+			return request()
 
 		if response.status_code != 200:
 			error_exit(f"{self.url} - {response}")
@@ -100,7 +105,7 @@ class Vaccine:
 			}
 
 		res = requests.post(self.request_url, data=data)
-		print(res.text)
+		print(res)
 
 	def vaccine(self):
 		self.post("admin", "aaa")
