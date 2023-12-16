@@ -9,13 +9,27 @@ def error_exit(msg):
 	print(f"Error: {msg}")
 	exit(1)
 
+def form_url(url, add):
+	if add.startswith('/'):
+		if url.endswith('/'):
+			url = url[:-1]
+		return url + add
+
+	baseurl_match = re.search(r'^(https?://[^/]+)', url)
+	if not baseurl_match:
+		error_exit(f"worng url - {url}")
+	baseurl = baseurl_match.group()
+	return baseurl + '/' + add
+
 class Vaccine:
 	def __init__(self, url, file, method):
 		self.url = url
 		self.file = file
 		self.method = method
 
-		field = self.get_field_names()
+		form = self.get_form()
+		self.request_url = self.get_request_url(form)
+		field = self.get_field_names(form)
 		if len(field) > 1:
 			self.username_field_name = field[0]
 			self.password_field_name = field[1]
@@ -24,35 +38,48 @@ class Vaccine:
 
 	def __str__(self):
 		return f'''- url: {self.url}
+- request-url: {self.request_url}
 - method: {self.method}
 - username-field: {self.username_field_name}
 - password-field: {self.password_field_name}'''
 
-	def get_field_names(self):
+	def get_form(self):
 		txt = self.request()
-		forms = re.findall(r'<form((.|\s)*?)</form>', txt)
+		forms = re.findall(r'(<form(.|\s)*?</form>)', txt)
+
 		if not forms:
 			error_exit("form block does not exist")
-		fields = []
+		filtered_froms = []
 		for form in forms:
 			method_match = re.search(r'method="(.*?)"', form[0])
 			if not method_match:
 				continue
 			if method_match.group(1) != self.method:
 				continue
-			ids = re.findall(r'<input[^>]+id="(.*?)"', form[0])
-			fields.append(ids)
-		if not fields:
+			filtered_froms.append(form[0])
+
+		if not filtered_froms:
 			error_exit("input field not found")
-		if len(fields) > 1:
+		if len(filtered_froms) > 1:
 			error_exit("multiple fields exist, cannot determin")
-		return fields[0]
+		return filtered_froms[0]
+
+	def get_field_names(self, form):
+		return re.findall(r'<input[^>]+id="(.*?)"', form)
+
+	def get_request_url(self, form):
+		actions = re.findall(r'<form[^>]+action="(.*?)"', form)
+		if not actions:
+			return self.url
+		if len(actions) > 1:
+			error_exit("too many actions found")
+		return form_url(self.url, actions[0])
 
 	def request(self):
 		try:
 			response = requests.get(self.url)
 		except requests.exceptions.ConnectionError:
-			error_exit(f"ERROR: connection refused - {self.url}")
+			error_exit(f"connection refused - {self.url}")
 		except:
 			error_exit(f"invalid URL - {self.url}")
 
@@ -61,15 +88,21 @@ class Vaccine:
 		return response.text
 
 	def post(self, username, password):
-		data = {
-			self.username_field_name: username,
-			self.password_field_name: password
-		}
-		res = requests.post(self.url, json=data)
+		if self.username_field_name:
+			data = {
+				self.username_field_name: username,
+				self.password_field_name: password
+			}
+		else:
+			data = {
+				self.password_field_name: password
+			}
+
+		res = requests.post(self.request_url, data=data)
 		print(res)
 
-	def Vaccine():
-		post("admin", "admin")
+	def vaccine(self):
+		self.post("admin", "aaa")
 
 
 def validate_args(args):
@@ -95,6 +128,7 @@ def main():
 	args = parse_args()
 	validate_args(args)
 	vaccine = Vaccine(args.url, args.o, args.x)
+	vaccine.vaccine()
 	print(vaccine)
 	print(args)
 
