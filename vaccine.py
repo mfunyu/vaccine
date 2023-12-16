@@ -2,6 +2,7 @@
 import argparse
 import requests
 import re
+import os
 
 REQUEST_TYPES = set(["get", "post"])
 
@@ -10,6 +11,8 @@ def error_exit(msg):
 	exit(1)
 
 def form_url(url, add):
+	if add == "#":
+		return url
 	if add.startswith('/'):
 		if url.endswith('/'):
 			url = url[:-1]
@@ -79,7 +82,8 @@ class Vaccine:
 
 	def request(self):
 		try:
-			cookies = {'PHPSESSID': 'nel0fho1gbdki58qm6365n5lh3'}
+			token = os.environ.get('TOKEN')
+			cookies = {'PHPSESSID': token}
 			response = requests.get(self.url, cookies=cookies)
 		except requests.exceptions.ConnectionError:
 			error_exit(f"connection refused - {self.url}")
