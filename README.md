@@ -1,5 +1,11 @@
 # Vaccine
 
+# Usage
+
+```
+export TOKEN=YOUR_COOKIE
+```
+
 # Websites
 
 - https://altoromutual.com/login.jsp
