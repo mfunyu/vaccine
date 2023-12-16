@@ -15,7 +15,18 @@ class Vaccine:
 		self.file = file
 		self.method = method
 
-		self.get_field_names()
+		field = self.get_field_names()
+		if len(field) > 1:
+			self.username_field_name = field[0]
+			self.password_field_name = field[1]
+		else:
+			self.password_field_name = field[0]
+
+	def __str__(self):
+		return f'''- url: {self.url}
+- method: {self.method}
+- username-field: {self.username_field_name}
+- password-field: {self.password_field_name}'''
 
 	def get_field_names(self):
 		txt = self.request()
@@ -33,7 +44,9 @@ class Vaccine:
 			fields.append(ids)
 		if not fields:
 			error_exit("input field not found")
-		print(fields)
+		if len(fields) > 1:
+			error_exit("multiple fields exist, cannot determin")
+		return fields[0]
 
 	def request(self):
 		try:
@@ -82,6 +95,7 @@ def main():
 	args = parse_args()
 	validate_args(args)
 	vaccine = Vaccine(args.url, args.o, args.x)
+	print(vaccine)
 	print(args)
 
 if __name__ == '__main__':
