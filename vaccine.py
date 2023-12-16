@@ -3,7 +3,7 @@ import argparse
 import requests
 import re
 import os
-from difflib import Differ
+import difflib
 
 REQUEST_TYPES = set(["get", "post"])
 
@@ -29,10 +29,14 @@ def form_url(url, add):
 	return baseurl + '/' + add
 
 def print_diff(str1, str2):
-	differ = Differ()
-	diff = list(differ.compare(str1.splitlines(), str2.splitlines()))
-	diff_str = '\n'.join(diff)
-	print(diff_str)
+	diff = difflib.unified_diff(str1.splitlines(), str2.splitlines(), n = 0)
+	cnt = 0
+	for d in diff:
+		cnt = cnt + 1
+		if cnt < 4:
+			continue
+		print(d)
+	print(diff)
 
 class Union:
 	def __init__(self, submit):
