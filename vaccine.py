@@ -3,7 +3,7 @@ import argparse
 import requests
 import re
 
-REQUEST_TYPES = set(["GET", "POST"])
+REQUEST_TYPES = set(["get", "post"])
 
 def error_exit(msg):
 	print(f"Error: {msg}")
@@ -19,24 +19,33 @@ class Vaccine:
 
 	def get_field_names(self):
 		txt = self.request()
-		print(txt)
-		forms = re.findall(r'<form[^>]*>(.*?)</form>', txt)
-		print(forms)
+		forms = re.findall(r'<form((.|\s)*?)</form>', txt)
+		if not forms:
+			error_exit("form block does not exist")
+		fields = []
 		for form in forms:
-			fields = re.findall(r'<input[^>]+id="(.*?)"', form)
+			method_match = re.search(r'method="(.*?)"', form[0])
+			if not method_match:
+				continue
+			if method_match.group(1) != self.method:
+				continue
+			ids = re.findall(r'<input[^>]+id="(.*?)"', form[0])
+			fields.append(ids)
+		if not fields:
+			error_exit("input field not found")
 		print(fields)
 
 	def request(self):
 		try:
-			r = requests.get(self.url)
+			response = requests.get(self.url)
 		except requests.exceptions.ConnectionError:
 			error_exit(f"ERROR: connection refused - {self.url}")
 		except:
 			error_exit(f"invalid URL - {self.url}")
 
-		if r.status_code != 200:
-			error_exit(f"{self.url} - {r}")
-		return r.text
+		if response.status_code != 200:
+			error_exit(f"{self.url} - {response}")
+		return response.text
 
 	def post(self, username, password):
 		data = {
@@ -54,6 +63,7 @@ def validate_args(args):
 	if not args.url.startswith('https://') and \
 		not args.url.startswith('http://'):
 		args.url = 'https://' + args.url
+	args.x = args.x.lower()
 	if args.x not in REQUEST_TYPES:
 		error_exit(f"Request type {args.x} is not supported")
 
