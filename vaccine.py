@@ -34,6 +34,7 @@ class Vaccine:
 			self.username_field_name = field[0]
 			self.password_field_name = field[1]
 		else:
+			self.username_field_name = None
 			self.password_field_name = field[0]
 
 	def __str__(self):
@@ -65,7 +66,7 @@ class Vaccine:
 		return filtered_froms[0]
 
 	def get_field_names(self, form):
-		return re.findall(r'<input[^>]+id="(.*?)"', form)
+		return re.findall(r'<input[^>]+name="(.*?)"', form)
 
 	def get_request_url(self, form):
 		actions = re.findall(r'<form[^>]+action="(.*?)"', form)
