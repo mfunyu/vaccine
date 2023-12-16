@@ -60,7 +60,7 @@ class Vaccine:
 			filtered_froms.append(form[0])
 
 		if not filtered_froms:
-			error_exit("input field not found")
+			error_exit("method does not match")
 		if len(filtered_froms) > 1:
 			error_exit("multiple fields exist, cannot determin")
 		return filtered_froms[0]
@@ -100,7 +100,7 @@ class Vaccine:
 			}
 
 		res = requests.post(self.request_url, data=data)
-		print(res)
+		print(res.text)
 
 	def vaccine(self):
 		self.post("admin", "aaa")
