@@ -13,6 +13,8 @@ Display following information in case a website is confirmed to be vulnerable
 
 Display result in terminal and store in a log file (default: `log.txt`)
 
+<img width="815" alt="Capture d’écran 2023-12-17 à 17 24 18" src="https://github.com/mfunyu/Stockholm/assets/60470877/ff270001-5e5d-480b-966d-617b53e54fa1">
+
 ## Usage
 
   ```
