@@ -113,24 +113,24 @@ class Union:
 		colums = ", ".join(column_lst)
 		query = self.header + "SELECT " + colums + contents + self.comment
 		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
-		return self.submit(query).text
+		return self.submit(query).text, query
 
 	def exec_union(self, column_name, contents):
-		response = self.submit_query(column_name, contents)
+		response, query = self.submit_query(column_name, contents)
 		result = get_result(self.original_text, response, query)
 		if not result:
 			raise self.UnionException("this method does not work")
-		#print(result)
+		print(result)
 
 	def check_union(self, column_name, compare):
-		response = self.submit_query(column_name)
+		response, query = self.submit_query(column_name)
 		result = get_result(compare, response)
 		log_to_file(compare, response)
 		#print(result)
 		return result
 
 	def get_version(self):
-		response = self.submit_query("error")
+		response, query = self.submit_query("error")
 		result = self.check_union("@@version", response)
 		if result:
 			return
