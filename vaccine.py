@@ -1,4 +1,4 @@
-#!/Users/u_2/Desktop/42cursus/second-circle/vaccine/.venv/bin/python3
+#!/usr/bin/python3
 import argparse
 import requests
 import re
@@ -81,7 +81,7 @@ class Union:
 		self.column_counts = self.check_num_colums()
 
 		self.mysql = True
-		
+
 	def check_num_colums(self):
 		flag = 0
 		for i in range(1, 12):
