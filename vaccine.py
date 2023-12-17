@@ -105,7 +105,7 @@ class Union:
 		column_counts = i - flag
 		if column_counts == 0 or column_counts >= 10:
 			raise self.UnionException("this method does not work")
-		print(f"column counts: {column_counts}")
+		#print(f"column counts: {column_counts}")
 		return column_counts
 
 	def submit_query(self, column_name, contents=""):
@@ -113,11 +113,11 @@ class Union:
 		column_lst.append(column_name)
 		colums = ", ".join(column_lst)
 		query = self.header + "SELECT " + colums + contents + self.comment
-		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		return self.submit(query).text, query
 
 	def exec_union(self, column_name, contents):
 		response, query = self.submit_query(column_name, contents)
+		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 		result = get_result(self.original_text, response, query)
 		if not result:
 			raise self.UnionException("this method does not work")
@@ -134,9 +134,11 @@ class Union:
 		response, query = self.submit_query("error")
 		result = self.check_union("@@version", response)
 		if result:
+			print(f"{Style.GREEN}mode: MYSQL{Style.RESET}")
 			return
 		result = self.check_union("sqlite_version()", response)
 		if result:
+			print(f"{Style.GREEN}mode: SQLite{Style.RESET}")
 			self.mysql = False
 
 	def get_database_name(self):
