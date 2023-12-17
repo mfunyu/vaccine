@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/Users/u_2/Desktop/42cursus/second-circle/vaccine/.venv/bin/python3
 import argparse
 import requests
 import re
@@ -37,6 +37,12 @@ def form_url(url, add):
 	baseurl = baseurl_match.group()
 	return baseurl + '/' + add
 
+def log_to_file(str1, str2):
+	with open("log.txt", "w") as f:
+		f.write(str1)
+	with open("log2.txt", "w") as f:
+		f.write(str2)
+
 def get_diff(str1, str2):
 	diff = difflib.unified_diff(str1.splitlines(), str2.splitlines(), n = 0)
 	ret = ""
@@ -45,13 +51,18 @@ def get_diff(str1, str2):
 		cnt = cnt + 1
 		if cnt < 4:
 			continue
-		ret = ret + d
+		if d.startswith("-"):
+			continue
+		ret = ret + d[1:].strip() + '\n'
 	return ret
 
 def get_result(str1, str2, query):
 	diff = get_diff(str1, str2)
-	result = re.sub('<.*?>', '\n', diff)
+	result = diff.replace("<b>", "")
+	result = result.replace("</b>", "")
+	result = re.sub('<(.|\n)*?>', '\n', result)
 	result = result.replace(query, "[query]")
+	print(result)
 	return result
 
 class Union:
@@ -106,7 +117,7 @@ class Union:
 		result = get_result(self.original_text, res.text, query)
 		if not result:
 			raise self.UnionException("this method does not work")
-		print(result)
+		#print(result)
 
 	def check_union(self, column_name, contents):
 		column_lst = [column_name] * self.column_counts
@@ -116,6 +127,8 @@ class Union:
 		res = self.submit(query)
 		#print(res.text)
 		result = get_result(self.original_text, res.text, query)
+		log_to_file(self.original_text, res.text)
+		#print(result)
 		return result
 
 	def get_version(self):
