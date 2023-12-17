@@ -78,9 +78,9 @@ class Union:
 	class UnionException(Exception):
 		pass
 
-	def __init__(self, submit, helper, get_input):
+	def __init__(self, helper, get_input):
 		print(f"{Style.GREEN}< UNION comment:{helper.comment} >{Style.RESET}")
-		self.submit = submit
+		self.submit = helper.submit
 		self.delimiter = helper.delimiter
 		self.header = self.delimiter + " UNION "
 		self.comment = helper.comment
@@ -315,7 +315,7 @@ class Vaccine:
 	def vaccine(self):
 		try:
 			v = VaccineHelper(self.submit, "#")
-			u = Union(self.submit, v, self.get_input)
+			u = Union(v, self.get_input)
 			u.union()
 		except Union.UnionException as e:
 			error_continue(e)
@@ -323,7 +323,7 @@ class Vaccine:
 			error_exit(e)
 		try:
 			v = VaccineHelper(self.submit, "--")
-			u2 = Union(self.submit, v, self.get_input)
+			u2 = Union(v, self.get_input)
 			u2.union()
 		except Union.UnionException as e:
 			error_continue(e)
