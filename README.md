@@ -1,4 +1,17 @@
-# Vaccine
+# Vaccine - Web (Cybersecurity)
+
+Detect SQL injection using a given URL
+  - Check `Error` and `Union` SQL injections
+  - Check `Mysql` and `SQLite` database types
+
+Display following information in case a website is confirmed to be vulnerable
+  - Payload used
+  - Database names
+  - Table names
+  - Column names
+  - Other values
+
+Display result in terminal and store in a log file (default: `log.txt`)
 
 ## Usage
 
@@ -21,7 +34,7 @@
   ```
 
 
-### Damn Vulnerable Web Application [(github)](https://github.com/digininja/DVWA)
+## ① Damn Vulnerable Web Application [(github)](https://github.com/digininja/DVWA)
 
 |  | data |
 | - | - |
@@ -53,7 +66,7 @@
    export TOKEN=YOUR_COOKIE
    ```
 
-### sqli-playground [(github)](https://gitlab.cylab.be/cylab/play/sqlite-injection/)
+## ② sqli-playground [(github)](https://gitlab.cylab.be/cylab/play/sqlite-injection/)
 
 |  | data |
 | - | - |
@@ -74,7 +87,7 @@
 
 - https://redtiger.labs.overthewire.org/
 
-## ERROR
+## 1. ERROR
 - Use `ORDER BY` to check numbers of colums
 ```
 ' ORDER BY 1--
@@ -82,9 +95,9 @@
 ...
 ```
 
-## UNION
+## 2. UNION
 
-### MySQL
+### a. MySQL
 - https://portswigger.net/web-security/sql-injection/union-attacks
 
 - Get database name
@@ -100,7 +113,7 @@
 ' UNION SELECT null, column_name FROM information_schema.columns WHERE table_name = 'users'#
 ```
 
-### SQLite
+### b. SQLite
 
 - Get table_names
 ```
