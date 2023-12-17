@@ -70,7 +70,7 @@ class Log:
 			print(color + msg[:500] + Style.RESET)
 		else:
 			print(msg[:500])
-		self.data = self.data + msg
+		self.data = self.data + msg + '\n'
 
 	def to_file(self):
 		with open(self.filename, "w") as f:
@@ -154,7 +154,7 @@ class Union:
 		result = get_result(self.original_text, response, query)
 		if not result:
 			raise self.UnionException("this method does not work")
-		logger.log(result[:500])
+		logger.log(result)
 
 	def check_union(self, column_name, compare):
 		response, query = self.submit_query(column_name)
