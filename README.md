@@ -2,11 +2,57 @@
 
 # Usage
 
-```
-export TOKEN=YOUR_COOKIE
-```
+- start running docker containers
+  ```
+  make setup
+  ```
 
-# Websites
+## [`Damn Vulnerable Web Application`](https://github.com/digininja/DVWA)
+
+|  | data |
+| - | - |
+| url |  http://localhost:8080/vulnerabilities/sqli/index.php |
+| method | GET |
+| token | required |
+
+1. start docker container (`make setup`)
+   ```
+   docker run -it -d -p 8080:80 vulnerables/web-dvwa
+   ```
+2. initialize database manually
+   - http://localhost:8080/setup.php
+
+3. login manually
+   - http://localhost:8080/login.php
+   ```
+   username: admin
+   password: password
+   ```
+
+4. get cookie
+   - http://localhost:8080/index.php
+   - get cookie value of `PHPSESSID`
+     - inspect -> Application tab -> Storage -> Cookies
+
+5. set cookie to evn variable
+   ```
+   export TOKEN=YOUR_COOKIE
+   ```
+
+## [`sqli-playground`](https://gitlab.cylab.be/cylab/play/sqlite-injection/)
+
+|  | data |
+| - | - |
+| url | http://localhost:8000 | 
+| method | POST |
+| token | - |
+
+1. start docker container (`make setup`)
+   ```
+   docker run -d -p 8000:80 gitlab.cylab.be:8081/cylab/play/sqlite-injection
+   ```
+
+# Other SQL injection sites
 
 - https://altoromutual.com/login.jsp
 

@@ -10,8 +10,8 @@ test3	:
 	./vaccine.py http://localhost:8000 -x post
 
 setup	:
-	docker run -it -d -p 8080:80 vulnerables/web-dvwa
-	docker run -p 8000:80 gitlab.cylab.be:8081/cylab/play/sqlite-injection
+	-docker run -it -d -p 8080:80 vulnerables/web-dvwa
+	-docker run -d -p 8000:80 gitlab.cylab.be:8081/cylab/play/sqlite-injection
 
 fclean	:
 	docker system prune
