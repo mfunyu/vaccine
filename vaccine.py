@@ -61,9 +61,10 @@ def get_result(str1, str2, query=""):
 	result = diff.replace("<b>", "")
 	result = result.replace("</b>", "")
 	result = re.sub('<(.|\n)*?>', '\n', result)
+	result = re.sub('\n+', '\n', result)
 	if query:
 		result = result.replace(query, "[query]")
-	return result
+	return result[:500]
 
 class Union:
 	class UnionException(Exception):
